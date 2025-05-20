@@ -180,6 +180,7 @@
                         <configuration>
                             <excludes>
                                 <exclude>**/model/**</exclude>
+                                <exclude>**/config/*</exclude>
                                 <exclude>**/*Application.*</exclude>
                             </excludes>
                         </configuration>
