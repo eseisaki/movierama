@@ -1,27 +1,34 @@
 package com.personal.movierama_backend.auth.serivce
 
+import com.personal.movierama_backend.auth.dto.LoginRequest
 import com.personal.movierama_backend.auth.dto.SignupRequest
 import com.personal.movierama_backend.common.exception.UserAlreadyExistsException
 import com.personal.movierama_backend.common.model.User
 import com.personal.movierama_backend.common.repository.UserRepository
 import com.personal.movierama_backend.security.JwtUtil
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.core.Authentication
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
 import spock.lang.Specification
 
 class AuthServiceImplSpec extends Specification {
 
     UserRepository userRepository
+    AuthenticationManager authenticationManager
     PasswordEncoder passwordEncoder
     JwtUtil jwtUtil
 
     AuthService authService
 
     def setup() {
+        authenticationManager = Mock()
         userRepository = Mock()
         passwordEncoder = Mock()
         jwtUtil = Mock()
 
-        authService = new AuthServiceImpl(userRepository, passwordEncoder, jwtUtil)
+        authService = new AuthServiceImpl(authenticationManager, userRepository, passwordEncoder, jwtUtil)
     }
 
     def "should register new user and return JWT"() {
@@ -59,9 +66,48 @@ class AuthServiceImplSpec extends Specification {
         thrown(UserAlreadyExistsException)
 
         where:
-        field | usernameExists | emailExists
-        "username" | true      | false
-        "email" | false        | true
+        field      | usernameExists | emailExists
+        "username" | true           | false
+        "email"    | false          | true
+    }
+
+    def "should authenticate user and return JWT token"() {
+        given:
+        def request = new LoginRequest("john", "plain123")
+        def user = new User("john", "john@example.com", "hashed123")
+        def expectedToken = "jwt.token.value"
+
+        def authentication = Mock(Authentication) {
+            getPrincipal() >> user
+        }
+
+        when:
+        def token = authService.authenticateUser(request)
+
+        then:
+        1 * authenticationManager.authenticate({ UsernamePasswordAuthenticationToken t ->
+            t.principal == "john" && t.credentials == "plain123"
+        }) >> authentication
+
+        1 * jwtUtil.generateToken(user) >> expectedToken
+
+        token == expectedToken
+    }
+
+
+    def "should throw BadCredentialsException when authentication fails"() {
+        given:
+        def request = new LoginRequest("john", "wrongpass")
+
+        when:
+        authService.authenticateUser(request)
+
+        then:
+        1 * authenticationManager.authenticate(_) >> {
+            throw new BadCredentialsException("Bad credentials")
+        }
+
+        thrown(BadCredentialsException)
     }
 
 }

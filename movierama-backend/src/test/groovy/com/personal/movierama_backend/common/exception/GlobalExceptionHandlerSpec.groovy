@@ -1,7 +1,12 @@
 package com.personal.movierama_backend.common.exception
 
+import org.springframework.http.HttpInputMessage
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.validation.BindingResult
 import org.springframework.validation.FieldError
@@ -66,4 +71,32 @@ class GlobalExceptionHandlerSpec extends Specification {
         response.body["username"] == "must not be blank"
         response.body["email"] == "must be a valid email"
     }
+
+    def "should handle HttpMessageNotReadableException with 400 and message"() {
+        given:
+        def ex = new HttpMessageNotReadableException("Request body is missing", (HttpInputMessage) null)
+
+        when:
+        def response = handler.handleJsonParseError(ex)
+
+        then:
+        response.statusCode == HttpStatus.BAD_REQUEST
+        response.body["error"] == "Invalid or missing request body"
+    }
+
+    def "should handle AuthenticationException with 401 and generic message"() {
+        given:
+        def ex = new AuthenticationException("Invalid credentials") {}
+        def handler = new GlobalExceptionHandler()
+
+        when:
+        def response = handler.handleAuthenticationException(ex)
+
+        then:
+        response.statusCode == HttpStatus.UNAUTHORIZED
+        response.body["error"] == "Unauthorized"
+        response.body["message"] == "Invalid username or password"
+    }
+
+
 }
