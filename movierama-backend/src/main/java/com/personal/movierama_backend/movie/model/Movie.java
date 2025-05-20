@@ -1,5 +1,6 @@
-package com.personal.movierama_backend.model;
+package com.personal.movierama_backend.movie.model;
 
+import com.personal.movierama_backend.common.model.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

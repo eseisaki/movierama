@@ -1,7 +1,7 @@
-package com.personal.movierama_backend.repository;
+package com.personal.movierama_backend.movie.repository;
 
-import com.personal.movierama_backend.model.Movie;
-import com.personal.movierama_backend.model.User;
+import com.personal.movierama_backend.movie.model.Movie;
+import com.personal.movierama_backend.common.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

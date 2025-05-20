@@ -1,7 +1,7 @@
-package com.personal.movierama_backend.repository
+package com.personal.movierama_backend.common.repository
 
 import com.personal.movierama_backend.MovieramaBackendApplication
-import com.personal.movierama_backend.model.User
+import com.personal.movierama_backend.common.model.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.context.ContextConfiguration
